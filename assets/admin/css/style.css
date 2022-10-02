@@ -1,0 +1,46 @@
+.fields {
+  padding-top: 8px;
+}
+
+.field_c {
+  margin-bottom: 5px;
+}
+
+.label_c {
+  width: 15%;
+  float: left;
+}
+
+.label_c label {
+  line-height: 35px;
+  color: #2271b1;
+}
+
+.input_c {
+  width: 85%;
+  float: left;
+}
+
+.input_c input {
+  height: 30px;
+}
+
+.float_c {
+  clear: both;
+}
+.input_c i {
+  position: absolute;
+}
+.icon {
+  padding: 8px;
+  /* min-width: 40px; */
+}
+
+.input-field {
+  padding: 10px;
+  text-align: center;
+}
+
+/* .ui-datepicker-header.ui-widget-header.ui-helper-clearfix.ui-corner-all {
+  background: #007fff;
+} */
