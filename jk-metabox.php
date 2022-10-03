@@ -23,7 +23,12 @@ class JKMetabox
         add_action('plugins_loaded', array($this, 'jkm_load_textdomain'));
 
         add_action('admin_menu', array($this, 'jkm_add_metabox'));
-        add_action('save_post', array($this, 'jkm_save_metabox'));
+        add_action(
+            'save_post',
+            array($this, 'jkm_save_metabox')
+        );
+        add_action('save_post', array($this, 'jkm_save_image'));
+        add_action('save_post', array($this, 'jkm_save_gallery'));
 
         add_action('admin_enqueue_scripts', array($this, 'jkm_enqueue_scripts'));
     }
@@ -59,15 +64,27 @@ class JKMetabox
     {
         add_meta_box(
             'jkm_post_location',
-            __('Location Info', 'jkmMetabox'),
+            __('Location Info', 'jkmetabox'),
             array($this, 'jkm_display_metabox'),
             array('post', 'page'),
         );
         add_meta_box(
             'jkm_book_info',
-            __('Book Info', 'jkmMetabox'),
+            __('Book Info', 'jkmetabox'),
             array($this, 'jkm_book_info'),
             array('books'),
+        );
+        add_meta_box(
+            'jkm_image_info',
+            __('Image Info', 'jkmetabox'),
+            array($this, 'jkm_image_info'),
+            array('post'),
+        );
+        add_meta_box(
+            'jkm_gallery_info',
+            __('Gallery Info', 'jkmetabox'),
+            array($this, 'jkm_gallery_info'),
+            array('post'),
         );
     }
     private function is_secured($nonce_field, $action, $post_id)
@@ -120,7 +137,33 @@ class JKMetabox
     }
 
 
-    function jkm_book_info()
+    function jkm_save_image($post_id)
+    {
+        if (!$this->is_secured('jkm_image_nonce', 'jkm_image', $post_id)) {
+            return $post_id;
+        }
+        $image_id =
+            isset($_POST['jkm_image_id']) ? $_POST['jkm_image_id'] : "";
+        $image_url = isset($_POST['jkm_image_url']) ? $_POST['jkm_image_url'] : "";
+
+        update_post_meta($post_id, 'jkm_image_id', $image_id);
+        update_post_meta($post_id, 'jkm_image_url', $image_url);
+    }
+    function jkm_save_gallery($post_id)
+    {
+        if (!$this->is_secured('jkm_gallery_nonce', 'jkm_gallery', $post_id)) {
+            return $post_id;
+        }
+        $image_id =
+            isset($_POST['jkm_images_id']) ? $_POST['jkm_images_id'] : "";
+        $image_url = isset($_POST['jkm_images_url']) ? $_POST['jkm_images_url'] : "";
+
+        update_post_meta($post_id, 'jkm_images_id', $image_id);
+        update_post_meta($post_id, 'jkm_images_url', $image_url);
+    }
+
+
+    function jkm_book_info($post)
     {
         wp_nonce_field('jkm_book', 'jkm_book_nonce');
 
@@ -159,9 +202,65 @@ class JKMetabox
 	
 </div>
 EOD;
-
         echo $metabox_html;
     }
+
+    function jkm_image_info($post)
+    {
+        $image_id = esc_attr(get_post_meta($post->ID, 'jkm_image_id', true));
+        $image_url = esc_attr(get_post_meta($post->ID, 'jkm_image_url', true));
+        wp_nonce_field('jkm_image', 'jkm_image_nonce');
+        $button_label = __('Upload Image', 'jkmetabox');
+
+        $metabox_html = <<<EOD
+<div class="fields">
+	<div class="field_c">
+		<div class="label_c">
+			<label>Image</label>
+		</div>
+		<div class="input_c">
+			<button class="button" id="upload_image">{$button_label}</button>
+			
+            <input type="hidden" name="jkm_image_id" id="jkm_image_id" value ="{$image_id}" />
+            <input type="hidden" name="jkm_image_url" id="jkm_image_url" value="{$image_url}" />
+            <div id="image-container"> </div>
+		</div>
+		<div class="float_c"></div>
+	</div>
+</div>
+EOD;
+        echo $metabox_html;
+    }
+
+    function jkm_gallery_info($post)
+    {
+        $image_id = esc_attr(get_post_meta($post->ID, 'jkm_images_id', true));
+        $image_url = esc_attr(get_post_meta($post->ID, 'jkm_images_url', true));
+        wp_nonce_field('jkm_gallery', 'jkm_gallery_nonce');
+
+        $label = __("Images", 'jkmetabox');
+        $button_label = __('Insert Gallery', 'jkmetabox');
+        $metabox_html = <<<EOD
+<div class="fields">
+	<div class="field_c">
+		<div class="label_c">
+			<label>{$label}</label>
+		</div>
+		<div class="input_c">
+			<button class="button" id="upload_images">{$button_label}</button>
+			
+            <input type="hidden" name="jkm_images_id" id="jkm_images_id" value ="{$image_id}" />
+            <input type="hidden" name="jkm_images_url" id="jkm_images_url" value="{$image_url}" />
+            <div id="images-container"> </div>
+		</div>
+		<div class="float_c"></div>
+	</div>
+</div>
+EOD;
+        echo $metabox_html;
+    }
+
+
     function jkm_display_metabox($post)
     {
         $location = get_post_meta(
