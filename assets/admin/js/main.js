@@ -78,7 +78,7 @@
         var image_urls = [];
         // Get media attachment details from the frame state
         var attachments = gframe.state().get("selection").toJSON();
-
+        $("#images-container").html("");
         for (i in attachments) {
           var attachment = attachments[i];
           image_ids.push(attachment.id);
